@@ -20,7 +20,7 @@ import sys
 import traceback
 
 from PyQt5.QtWidgets import *
-from mainwindow import Ui_mainWindow
+from utils.mainwindow import Ui_mainWindow
 
 import pandas as pd
 from utils.translate import TranslateThread
@@ -281,10 +281,14 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 	
 	def get_column_text(self, column_name):
 		obj = self.excel_data.loc[self.current_index, column_name]
+		# print(type(obj))
 		if pd.isna(obj):
 			return ""
 		else:
-			return str(obj).strip()
+			if column_name == 'answer_consistency':
+				return str(int(obj))
+			else:
+				return str(obj).strip()
 	
 	def judge_answerable(self):
 		text = self.get_column_text("label")
