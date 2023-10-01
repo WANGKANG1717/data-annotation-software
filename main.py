@@ -22,31 +22,35 @@ from PyQt5.QtWidgets import *
 from mainwindow import Ui_mainWindow
 
 import pandas as pd
+from utils.translate import TranslateThread
 
 
 class MainWindow(QMainWindow, Ui_mainWindow):
 	UNANSWERABLE_REASON_MAP = {
-		0: "understandability",
-		1: "specificity",
-		2: "contextual relevance",
-		3: "factual consistency",
-		4: "information sufficiency",
-		5: "other"
+		0: "",
+		1: "understandability",
+		2: "specificity",
+		3: "contextual relevance",
+		4: "factual consistency",
+		5: "information sufficiency",
+		6: "other"
 	}
 	# 无奈之下又做了一份反向映射，尴尬
 	UNANSWERABLE_REASON_MAP2 = {
-		"understandability": 0,
-		"specificity": 1,
-		"contextual relevance": 2,
-		"factual consistency": 3,
-		"information sufficiency": 4,
-		"other": 5,
+		"": 0,
+		"understandability": 1,
+		"specificity": 2,
+		"contextual relevance": 3,
+		"factual consistency": 4,
+		"information sufficiency": 5,
+		"other": 6,
 	}
 	
 	# 初始化ui
 	def __init__(self, parent=None):
 		super(MainWindow, self).__init__(parent)
 		
+		self.already_save_file = False
 		self.setupUi(self)
 		self.init_signal()
 		
@@ -62,6 +66,13 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 		self.current_index = 0  # 当前文章/问题下标
 		self.answerable = True  # 问题是否可回答
 		self.consistent = True  # 问题一致性 如果答案不可回答，则一致性为False
+		self.translate_map_passage = {}  # 用来记录已经翻译的文章，避免每次都要翻译，浪费算力
+		self.translate_map_question = {}
+		self.translate_map_answer = {}
+		self.translate_threads = []  # 翻译线程队列
+		self.passage_auto_translate = False  # 自动翻译
+		self.question_auto_translate = False
+		self.answer_auto_translate = False
 		
 		self.disable_components()  # 一开始需要禁用按钮 等到打开文件后再开启按钮
 	
@@ -75,6 +86,18 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 		self.radioButton_consistent.setDisabled(True)
 		self.radioButton_unconsistent.setDisabled(True)
 		self.pushButton_notes_confirm.setDisabled(True)
+		#
+		self.pushButton_article_source.setDisabled(True)
+		self.pushButton_question_source.setDisabled(True)
+		self.pushButton_answer_source.setDisabled(True)
+		#
+		self.pushButton_article_translate.setDisabled(True)
+		self.pushButton_question_translate.setDisabled(True)
+		self.pushButton_answer_translate.setDisabled(True)
+		#
+		self.checkBox_article_auto_translate.setDisabled(True)
+		self.checkBox_question_auto_translate.setDisabled(True)
+		self.checkBox_answer_auto_translate.setDisabled(True)
 	
 	def enable_components(self):
 		self.pushButton_next.setDisabled(False)
@@ -86,6 +109,18 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 		self.radioButton_consistent.setDisabled(False)
 		self.radioButton_unconsistent.setDisabled(False)
 		self.pushButton_notes_confirm.setDisabled(False)
+		#
+		self.pushButton_article_source.setDisabled(False)
+		self.pushButton_question_source.setDisabled(False)
+		self.pushButton_answer_source.setDisabled(False)
+		#
+		self.pushButton_article_translate.setDisabled(False)
+		self.pushButton_question_translate.setDisabled(False)
+		self.pushButton_answer_translate.setDisabled(False)
+		#
+		self.checkBox_article_auto_translate.setDisabled(False)
+		self.checkBox_question_auto_translate.setDisabled(False)
+		self.checkBox_answer_auto_translate.setDisabled(False)
 	
 	# 信号与槽的设置
 	def init_signal(self):
@@ -99,22 +134,52 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 		self.comboBox_unanswerable_reason.currentIndexChanged.connect(self.change_unanswerable_reason)
 		self.pushButton_notes_confirm.clicked.connect(self.set_notes)
 		self.action_save.triggered.connect(self.save_file)
+		#
+		self.pushButton_article_translate.clicked.connect(lambda: self.translate("passage"))
+		self.pushButton_question_translate.clicked.connect(lambda: self.translate("target"))
+		self.pushButton_answer_translate.clicked.connect(lambda: self.translate("answer"))
+		#
+		self.pushButton_article_source.clicked.connect(lambda: self.to_source("passage"))
+		self.pushButton_question_source.clicked.connect(lambda: self.to_source("target"))
+		self.pushButton_answer_source.clicked.connect(lambda: self.to_source("answer"))
+		#
+		self.checkBox_article_auto_translate.clicked.connect(lambda: self.auto_translate("passage"))
+		self.checkBox_question_auto_translate.clicked.connect(lambda: self.auto_translate("target"))
+		self.checkBox_answer_auto_translate.clicked.connect(lambda: self.auto_translate("answer"))
+	
+	#
 	
 	def open_file(self):
 		# print("open_file")
-		path = QFileDialog.getOpenFileName(self, 'open')[0]
-		if path:
-			self.file_path = path
-			self.excel_data = pd.read_excel(path)
-			self.set_status_bar_msg("打开成功 " + path)
-			self.init_component()
+		try:
+			path = QFileDialog.getOpenFileName(self, 'open')[0]
+			if path:
+				self.file_path = path
+				self.excel_data = pd.read_excel(path)
+				self.set_status_bar_msg("打开成功 " + path)
+				self.init_component()
+		except:
+			QMessageBox.critical(self, "错误", "文件打开失败，请检查文件内容是否正常！")
+			self.set_status_bar_msg("文件打开失败！")
 	
 	def save_file(self):
+		if not self.file_path:
+			return
 		try:
 			self.excel_data.to_excel(self.file_path, index=False)
-			self.set_status_bar_msg("保存成功")
+			self.set_status_bar_msg("文件保存成功")
+			self.already_save_file = True
 		except Exception as e:
-			self.set_status_bar_msg("保存失败")
+			QMessageBox.critical(self, "错误", "文件保存失败，请检查是否有其他软件正在使用文件！")
+			self.set_status_bar_msg("文件保存失败")
+	
+	def saveAs_file(self):
+		if not self.file_path:
+			return
+		path = QFileDialog.getSaveFileName(window, '另存为')[0]
+		if path:
+			self.file_path = path
+			self.save_file()
 	
 	def init_component(self):
 		self.current_index = 0
@@ -125,20 +190,20 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 	def set_status_bar_msg(self, msg, timeout=5000):
 		self.statusBar().showMessage(msg, timeout)
 	
-	def getPassage(self, current_index):
-		self.passage = self.excel_data.loc[current_index, 'passage']
+	def getPassage(self):
+		self.passage = self.excel_data.loc[self.current_index, 'passage']
 		# print(self.passage)
 		self.textBrowser_passage.setText(self.passage)
 	
-	def getQuestion(self, current_index):
-		self.question = self.excel_data.loc[current_index, 'target']
+	def getQuestion(self):
+		self.question = self.excel_data.loc[self.current_index, 'target']
 		# print(self.question)
 		self.textBrowser_question.setText(self.question)
 	
 	def next_passage_question(self):
 		# 这里首先要确保不可回答-其他 备注要填上
 		if self.answerable == False:
-			if not self.set_notes(self.comboBox_unanswerable_reason.currentIndex() == 5):
+			if not self.set_notes(self.comboBox_unanswerable_reason.currentIndex() == 6):
 				return
 		if self.current_index < self.data_size - 1:
 			self.current_index += 1
@@ -173,36 +238,32 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 	def set_consistent(self, flag):
 		self.consistent = flag
 		self.change_consistent()
-		print(self.answerable, self.consistent)
-		print(self.excel_data.loc[self.current_index, ['label', 'answer_consistency', "备注"]])
 	
 	def set_answerable(self, flag):
 		self.answerable = flag
 		if not self.answerable:  # 保证一致性
 			self.consistent = False
+		else:
+			self.comboBox_unanswerable_reason.setCurrentIndex(0)
 		self.change_answerable()
-		print(self.answerable, self.consistent)
-		print(self.excel_data.loc[self.current_index, ['label', 'answer_consistency', "备注"]])
 	
 	def change_unanswerable_reason(self):
 		index = self.comboBox_unanswerable_reason.currentIndex()
 		# print(index)
 		self.excel_data.loc[self.current_index, 'label'] = "unanswerable:" + self.UNANSWERABLE_REASON_MAP[index]
-		print(self.answerable, self.consistent)
-		print(self.excel_data.loc[self.current_index, ['label', 'answer_consistency', "备注"]])
 		
 		# 只有当index == 5 时才会放开
-		if index == 5:
+		if index == 6:
 			self.lineEdit_unanswerable_notes.setDisabled(False)
 	
 	def set_notes(self, flag):  # flag =True 说明是other错误
 		text = self.lineEdit_unanswerable_notes.text().strip()
-		print(text)
+		# print(text)
 		if text == "" and flag:
 			QMessageBox.warning(self, "警告", "备注为空")
 			return False
 		self.excel_data.loc[self.current_index, "备注"] = text
-		print(self.excel_data.loc[self.current_index, ['label', 'answer_consistency', "备注"]])
+		# print(self.excel_data.loc[self.current_index, ['label', 'answer_consistency', "备注"]])
 		return True
 	
 	def get_column_text(self, column_name):
@@ -227,27 +288,16 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 			return False
 	
 	def get_set_ui_from_source(self):
-		self.getPassage(self.current_index)
-		self.getQuestion(self.current_index)
-		self.getAnswer(self.current_index)
-		#
-		self.answerable = self.judge_answerable()
-		# 在这里手动的触发事件
-		if self.answerable:
-			self.radioButton_answerable.click()
-		else:
-			self.radioButton_unanswerable.click()
-		self.consistent = self.judge_consistent()
-		if self.consistent:
-			self.radioButton_consistent.click()
-		else:
-			self.radioButton_unconsistent.click()
+		self.already_save_file = False
+		self.getPassage()
+		self.getQuestion()
+		self.getAnswer()
+		
+		self.set_answerable(self.judge_answerable())
+		self.set_consistent(self.judge_consistent())
 		# self.init_radio_button()
 		#
 		if not self.answerable:
-			print("---------")
-			print(self.excel_data.loc[self.current_index, ['label', 'answer_consistency', "备注"]])
-			print("---------")
 			try:
 				reason = self.get_column_text("label").split(":")[1]
 				index = self.UNANSWERABLE_REASON_MAP2[reason]
@@ -256,6 +306,17 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 			self.comboBox_unanswerable_reason.setCurrentIndex(index)
 		# 
 		self.lineEdit_unanswerable_notes.setText(self.get_column_text("备注"))
+		#
+		self.pushButton_article_translate.setDisabled(self.passage_auto_translate)
+		self.pushButton_question_translate.setDisabled(self.question_auto_translate)
+		self.pushButton_answer_translate.setDisabled(self.answer_auto_translate)
+		#
+		if self.passage_auto_translate:
+			self.translate("passage")
+		if self.question_auto_translate:
+			self.translate("target")
+		if self.answer_auto_translate:
+			self.translate("answer")
 	
 	def init_radio_answerable(self):
 		# 初始化组件状态
@@ -283,8 +344,91 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 		else:
 			self.radioButton_unconsistent.setChecked(True)
 	
-	def getAnswer(self, current_index):
+	def getAnswer(self):
 		self.textBrowser_answer.setText(self.get_column_text("answer"))
+	
+	def translate(self, param):
+		if param == "passage":
+			self.pushButton_article_translate.setDisabled(True)
+			self.pushButton_article_source.setDisabled(False)
+			if self.translate_map_passage.get(self.current_index) is not None:
+				self.textBrowser_passage.setText(self.translate_map_passage.get(self.current_index))
+				return
+		elif param == "target":
+			self.pushButton_question_translate.setDisabled(True)
+			self.pushButton_question_source.setDisabled(False)
+			if self.translate_map_question.get(self.current_index) is not None:
+				self.textBrowser_question.setText(self.translate_map_question.get(self.current_index))
+				return
+		elif param == "answer":
+			self.pushButton_answer_translate.setDisabled(True)
+			self.pushButton_answer_source.setDisabled(False)
+			if self.translate_map_answer.get(self.current_index) is not None:
+				self.textBrowser_answer.setText(self.translate_map_answer.get(self.current_index))
+				return
+		
+		new_thread = TranslateThread(self.get_column_text(param), param, self.current_index, self)
+		new_thread.translate_signal.connect(self.update_translate_article)
+		new_thread.start()
+		
+		self.translate_threads.append(new_thread)  # 向线程队列中添加线程
+	
+	def destroy_thread(self, thread):
+		self.translate_threads.remove(thread)
+	
+	# print(f"已经移除线程{thread}")
+	# print(self.translate_threads)
+	
+	def update_translate_article(self, translate_text, param, index):
+		self.set_status_bar_msg("翻译完成")
+		if param == "passage":
+			self.pushButton_article_translate.setDisabled(True)
+			self.pushButton_article_source.setDisabled(False)
+			self.textBrowser_passage.setText(translate_text)
+			self.translate_map_passage[index] = translate_text
+		elif param == "target":
+			self.pushButton_question_translate.setDisabled(True)
+			self.pushButton_question_source.setDisabled(False)
+			self.textBrowser_question.setText(translate_text)
+			self.translate_map_question[index] = translate_text
+		elif param == "answer":
+			self.pushButton_answer_translate.setDisabled(True)
+			self.pushButton_answer_source.setDisabled(False)
+			self.textBrowser_answer.setText(translate_text)
+			self.translate_map_answer[index] = translate_text
+	
+	def to_source(self, param):
+		if param == "passage":
+			self.pushButton_article_translate.setDisabled(False)
+			self.pushButton_article_source.setDisabled(True)
+			self.textBrowser_passage.setText(self.get_column_text(param))
+		elif param == "target":
+			self.pushButton_question_translate.setDisabled(False)
+			self.pushButton_question_source.setDisabled(True)
+			self.textBrowser_question.setText(self.get_column_text(param))
+		elif param == "answer":
+			self.pushButton_answer_translate.setDisabled(False)
+			self.pushButton_answer_source.setDisabled(True)
+			self.textBrowser_answer.setText(self.get_column_text(param))
+	
+	def auto_translate(self, param):
+		if param == "passage":
+			self.passage_auto_translate = self.checkBox_article_auto_translate.isChecked()
+		elif param == "target":
+			self.question_auto_translate = self.checkBox_question_auto_translate.isChecked()
+		elif param == "answer":
+			self.answer_auto_translate = self.checkBox_answer_auto_translate.isChecked()
+		self.translate(param)
+	
+	def closeEvent(self, e):
+		if self.file_path == "" or self.already_save_file:
+			return
+		answer = QMessageBox.question(window, '提示', '关闭之前是否保存文件',
+		                              QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+		if answer == QMessageBox.Save:
+			self.save_file()
+		elif answer == QMessageBox.Cancel:
+			e.ignore()  # 如果点击X号，或者点击cancel则只需要终止关闭窗口的事件
 
 
 if __name__ == '__main__':

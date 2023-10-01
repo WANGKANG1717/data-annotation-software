@@ -34,21 +34,21 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="pushButton_article_source">
         <property name="text">
          <string>原文</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_2">
+       <widget class="QPushButton" name="pushButton_article_translate">
         <property name="text">
          <string>翻译</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="checkBox">
+       <widget class="QCheckBox" name="checkBox_article_auto_translate">
         <property name="text">
          <string>自动翻译</string>
         </property>
@@ -96,21 +96,21 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_3">
+       <widget class="QPushButton" name="pushButton_question_source">
         <property name="text">
          <string>原文</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_4">
+       <widget class="QPushButton" name="pushButton_question_translate">
         <property name="text">
          <string>翻译</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="checkBox_2">
+       <widget class="QCheckBox" name="checkBox_question_auto_translate">
         <property name="text">
          <string>自动翻译</string>
         </property>
@@ -151,21 +151,21 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_5">
+       <widget class="QPushButton" name="pushButton_answer_source">
         <property name="text">
          <string>原文</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_6">
+       <widget class="QPushButton" name="pushButton_answer_translate">
         <property name="text">
          <string>翻译</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="checkBox_3">
+       <widget class="QCheckBox" name="checkBox_answer_auto_translate">
         <property name="text">
          <string>自动翻译</string>
         </property>
@@ -248,6 +248,11 @@
          </item>
          <item>
           <widget class="QComboBox" name="comboBox_unanswerable_reason">
+           <item>
+            <property name="text">
+             <string/>
+            </property>
+           </item>
            <item>
             <property name="text">
              <string>问题语句不通畅导致读不懂它要表达的意思</string>
