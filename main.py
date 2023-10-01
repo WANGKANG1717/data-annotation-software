@@ -17,6 +17,7 @@
 '''
 
 import sys
+import traceback
 
 from PyQt5.QtWidgets import *
 from mainwindow import Ui_mainWindow
@@ -51,7 +52,6 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 	def __init__(self, parent=None):
 		super(MainWindow, self).__init__(parent)
 		
-		self.already_save_file = False
 		self.setupUi(self)
 		self.init_signal()
 		
@@ -74,6 +74,8 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 		self.passage_auto_translate = False  # 自动翻译
 		self.question_auto_translate = False
 		self.answer_auto_translate = False
+		
+		self.already_save_file = True  # 方便退出脚本
 		
 		self.disable_components()  # 一开始需要禁用按钮 等到打开文件后再开启按钮
 	
@@ -106,7 +108,7 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 		self.radioButton_answerable.setDisabled(False)
 		self.radioButton_unanswerable.setDisabled(False)
 		self.comboBox_unanswerable_reason.setDisabled(False)
-		self.lineEdit_unanswerable_notes.setDisabled(False)
+		# self.lineEdit_unanswerable_notes.setDisabled(False)
 		self.radioButton_consistent.setDisabled(False)
 		self.radioButton_unconsistent.setDisabled(False)
 		self.pushButton_notes_confirm.setDisabled(False)
@@ -159,11 +161,12 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 		try:
 			path = QFileDialog.getOpenFileName(self, 'open')[0]
 			if path:
-				self.file_path = path
 				self.excel_data = pd.read_excel(path)
+				self.file_path = path
 				self.set_status_bar_msg("打开成功 " + path)
 				self.init_component()
 		except:
+			print(traceback.format_exc())
 			QMessageBox.critical(self, "错误", "文件打开失败，请检查文件内容是否正常！")
 			self.set_status_bar_msg("文件打开失败！")
 	
@@ -208,7 +211,10 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 	def next_passage_question(self):
 		# 这里首先要确保不可回答-其他 备注要填上
 		if self.answerable == False:
-			if not self.set_notes(self.comboBox_unanswerable_reason.currentIndex() == 6):
+			if self.comboBox_unanswerable_reason.currentIndex() == 0:
+				QMessageBox.warning(self, "警告", "请选择原因！")
+				return
+			if self.comboBox_unanswerable_reason.currentIndex() == 6 and not self.set_notes():
 				return
 		if self.current_index < self.data_size - 1:
 			self.current_index += 1
@@ -257,14 +263,16 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 		# print(index)
 		self.excel_data.loc[self.current_index, 'label'] = "unanswerable:" + self.UNANSWERABLE_REASON_MAP[index]
 		
-		# 只有当index == 5 时才会放开
+		# 只有当index == 6 时才会放开
 		if index == 6:
 			self.lineEdit_unanswerable_notes.setDisabled(False)
+		else:
+			self.lineEdit_unanswerable_notes.setDisabled(True)
 	
-	def set_notes(self, flag):  # flag =True 说明是other错误
+	def set_notes(self):  # flag =True 说明是other错误
 		text = self.lineEdit_unanswerable_notes.text().strip()
 		# print(text)
-		if text == "" and flag:
+		if text == "":
 			QMessageBox.warning(self, "警告", "备注为空")
 			return False
 		self.excel_data.loc[self.current_index, "备注"] = text
@@ -341,7 +349,8 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 			self.radioButton_unconsistent.setDisabled(True)
 			
 			self.comboBox_unanswerable_reason.setDisabled(False)
-			self.lineEdit_unanswerable_notes.setDisabled(False)
+	
+	# self.lineEdit_unanswerable_notes.setDisabled(False)
 	
 	def init_radio_consistent(self):
 		if self.consistent:
