@@ -24,7 +24,7 @@ from utils.mainwindow import Ui_mainWindow
 
 import pandas as pd
 from utils.translate import TranslateThread
-from dialog.dialog_text import *
+from utils.dialog_text import *
 
 
 class MainWindow(QMainWindow, Ui_mainWindow):
