@@ -1,2 +1,5 @@
 资料
 .idea
+build
+dist
+/*.spec
