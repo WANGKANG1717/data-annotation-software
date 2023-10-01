@@ -23,6 +23,7 @@ from mainwindow import Ui_mainWindow
 
 import pandas as pd
 from utils.translate import TranslateThread
+from dialog.dialog_text import *
 
 
 class MainWindow(QMainWindow, Ui_mainWindow):
@@ -435,14 +436,16 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 			e.ignore()  # 如果点击X号，或者点击cancel则只需要终止关闭窗口的事件
 	
 	def show_about_dialog(self):
-		with open("./dialog/about.html") as f:
-			about_text = f.read()
-		QMessageBox.about(window, '关于', about_text)
+		# with open("./dialog/about.html") as f:
+		# 	about_text = f.read()
+		text = DIALOG_ABOUT_HTML
+		QMessageBox.about(window, '关于', text)
 	
 	def show_help_dialog(self):
-		with open("./dialog/help.html") as f:
-			about_text = f.read()
-		QMessageBox.about(window, '帮助', about_text)
+		# with open("./dialog/help.html") as f:
+		# 	about_text = f.read()
+		text = DIALOG_HELP_HTML
+		QMessageBox.about(window, '帮助', text)
 
 
 if __name__ == '__main__':
