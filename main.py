@@ -146,8 +146,12 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 		self.checkBox_article_auto_translate.clicked.connect(lambda: self.auto_translate("passage"))
 		self.checkBox_question_auto_translate.clicked.connect(lambda: self.auto_translate("target"))
 		self.checkBox_answer_auto_translate.clicked.connect(lambda: self.auto_translate("answer"))
-	
-	#
+		#
+		self.action_saveAs.triggered.connect(self.saveAs_file)
+		self.action_exit.triggered.connect(self.close)
+		#
+		self.action_about.triggered.connect(self.show_about_dialog)
+		self.action_help.triggered.connect(self.show_help_dialog)
 	
 	def open_file(self):
 		# print("open_file")
@@ -429,6 +433,16 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 			self.save_file()
 		elif answer == QMessageBox.Cancel:
 			e.ignore()  # 如果点击X号，或者点击cancel则只需要终止关闭窗口的事件
+	
+	def show_about_dialog(self):
+		with open("./dialog/about.html") as f:
+			about_text = f.read()
+		QMessageBox.about(window, '关于', about_text)
+	
+	def show_help_dialog(self):
+		with open("./dialog/help.html") as f:
+			about_text = f.read()
+		QMessageBox.about(window, '帮助', about_text)
 
 
 if __name__ == '__main__':
@@ -436,19 +450,3 @@ if __name__ == '__main__':
 	window = MainWindow()
 	window.show()
 	sys.exit(app.exec_())
-
-'''
-label
-answerable
-unanswerable:specificity
-unanswerable:factual consistency
-unanswerable:information sufficiency
-,,,
-
-answer_consistency
-0 1
-
-
-备注
-notes
-'''
