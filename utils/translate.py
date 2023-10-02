@@ -69,7 +69,7 @@ def translate_en2zh(text):
 	APPID = "20230930001833627"
 	
 	data = {
-		'q': text,
+		'q': text.strip().replace("\n", "@@"),
 		'from': "en",
 		'to': "zh",
 		'appid': APPID,
@@ -81,7 +81,9 @@ def translate_en2zh(text):
 	json_data = requests.post(url=url, headers=headers, data=data).json()
 	# print(json_data)
 	if json_data.get('trans_result') is not None:
-		return json_data['trans_result'][0]['dst']
+		res = json_data['trans_result'][0]['dst']
+		res = res.replace("@@", "\n")
+		return res
 	else:
 		return json_data['error_msg']
 

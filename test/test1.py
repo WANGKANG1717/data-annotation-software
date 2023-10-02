@@ -7,15 +7,64 @@
 # Copyright 2023 WANGKANG, All Rights Reserved.
 import pandas as pd
 from pandas import DataFrame
+import random
+import hashlib
+import requests
 
-excel_data = pd.read_excel('./flant5-base-hotpot-fewshot.xlsx')
+
+def translate_en2zh(text):
+	def md5(data):
+		# appid + q + salt + 密钥
+		str = data["appid"] + data["q"] + data["salt"] + KEY
+		return hashlib.md5(str.encode("utf-8")).hexdigest()
+	
+	def random_num_10():
+		return str(random.randint(10 ** 9, 10 ** 10 - 1))
+	
+	headers = {
+		'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43'
+	}
+	
+	url = 'https://fanyi-api.baidu.com/api/trans/vip/translate'
+	
+	KEY = 'XZwpfN_VJ13VSXLhSYp5'
+	APPID = "20230930001833627"
+	
+	data = {
+		'q': text.strip().replace("\n", "@@"),
+		'from': "en",
+		'to': "zh",
+		'appid': APPID,
+		'salt': random_num_10(),
+		'sign': "",
+	}
+	data["sign"] = md5(data)
+	# print(data)
+	json_data = requests.post(url=url, headers=headers, data=data).json()
+	# print(json_data)
+	if json_data.get('trans_result') is not None:
+		res = json_data['trans_result'][0]['dst']
+		res = res.replace("@@", "\n")
+		return res
+	else:
+		return json_data['error_msg']
+
+
+if __name__ == '__main__':
+	text = '''
+A pine is any conifer in the genus Pinus, , of the family Pinaceae.  "Pinus" is the sole genus in the subfamily Pinoideae.  The Plant List compiled by the Royal Botanic Gardens, Kew and Missouri Botanical Garden accepts 126 species names of pines as current, together with 35 unresolved species and many more synonyms.
+Butea is a genus of flowering plants belonging to the pea family, Fabaceae.  It is sometimes considered to have only two species, "B. monosperma" and "B. superba", or is expanded to include four or five species.
+	'''
+	res = translate_en2zh(text)
+	print(res)
+# excel_data = pd.read_excel('./flant5-base-hotpot-fewshot.xlsx')
 # excel_data.loc[0, 'answer_consistency'] = 1
 # print(excel_data.loc[0])
 # print(excel_data.loc[0, 'passage'])
 # print(len(excel_data['passage']))
 # print(type(excel_data.loc[0, 'answer_consistency']))
-print(str(excel_data.loc[90, 'label']))
-print(pd.isna(excel_data.loc[90, 'label']))
+# print(str(excel_data.loc[90, 'label']))
+# print(pd.isna(excel_data.loc[90, 'label']))
 # print(excel_data.loc[0, ['label', 'answer_consistency', "备注"]])
 # print(pd.isna(excel_data.loc[0, 'label']) or excel_data.loc[0, 'label'].strip() == "")
 # print(excel_data.columns)
