@@ -38,6 +38,11 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 		"other": 6,
 	}
 	
+	ERROR_TRANSLATE = [
+		'出现未知异常！',
+		'请求过于频繁，请稍后再试！',
+	]
+	
 	# 初始化ui
 	def __init__(self, parent=None):
 		super(MainWindow, self).__init__(parent)
@@ -393,17 +398,20 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 			self.pushButton_article_translate.setDisabled(True)
 			self.pushButton_article_source.setDisabled(False)
 			self.textBrowser_passage.setText(translate_text)
-			self.translate_map_passage[index] = translate_text
+			if translate_text not in self.ERROR_TRANSLATE:
+				self.translate_map_passage[index] = translate_text
 		elif param == "target":
 			self.pushButton_question_translate.setDisabled(True)
 			self.pushButton_question_source.setDisabled(False)
 			self.textBrowser_question.setText(translate_text)
-			self.translate_map_question[index] = translate_text
+			if translate_text not in self.ERROR_TRANSLATE:
+				self.translate_map_question[index] = translate_text
 		elif param == "answer":
 			self.pushButton_answer_translate.setDisabled(True)
 			self.pushButton_answer_source.setDisabled(False)
 			self.textBrowser_answer.setText(translate_text)
-			self.translate_map_answer[index] = translate_text
+			if translate_text not in self.ERROR_TRANSLATE:
+				self.translate_map_answer[index] = translate_text
 	
 	def to_source(self, param):
 		if param == "passage":

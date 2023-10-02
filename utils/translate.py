@@ -31,13 +31,16 @@ class TranslateThread(QThread):
 	
 	def run(self):
 		try:
-			while True:
-				msg = translate_en2zh(self.text)
-				self.translate_signal.emit(msg, self.param, self.index)
-				if msg != 'Invalid Access Limit':
-					break
-				else:
-					time.sleep(random.randint(0, 3))
+			# while True:
+			msg = translate_en2zh(self.text)
+			if msg == 'Invalid Access Limit':
+				msg = '请求过于频繁，请稍后再试！'
+			self.translate_signal.emit(msg, self.param, self.index)
+		# 本来这里有一个请求频繁就会自动重新请求的机制，后面我发现了更好的方式，就取消了
+		# if msg != 'Invalid Access Limit':
+		# 	break
+		# else:
+		# 	time.sleep(random.randint(0, 5))
 		# print(msg)
 		except:
 			self.translate_signal.emit("出现未知异常！", self.param, self.index)
