@@ -244,9 +244,7 @@ class Ui_mainWindow(object):
 		self.checkBox_answer_auto_translate.setText(_translate("mainWindow", "自动翻译"))
 		self.groupBox.setTitle(_translate("mainWindow", "任务a：问题是否可回答？"))
 		self.radioButton_answerable.setText(_translate("mainWindow", "可回答"))
-		self.radioButton_answerable.setShortcut(_translate("mainWindow", "Q"))
 		self.radioButton_unanswerable.setText(_translate("mainWindow", "不可回答"))
-		self.radioButton_unanswerable.setShortcut(_translate("mainWindow", "W"))
 		self.label_4.setText(_translate("mainWindow", "原因："))
 		self.comboBox_unanswerable_reason.setItemText(1, _translate("mainWindow",
 		                                                            "问题语句不通畅导致读不懂它要表达的意思"))
@@ -263,13 +261,9 @@ class Ui_mainWindow(object):
 		self.pushButton_notes_confirm.setText(_translate("mainWindow", "确定"))
 		self.groupBox_2.setTitle(_translate("mainWindow", "任务b： 问题与答案是否一致？"))
 		self.radioButton_consistent.setText(_translate("mainWindow", "一致"))
-		self.radioButton_consistent.setShortcut(_translate("mainWindow", "A"))
 		self.radioButton_unconsistent.setText(_translate("mainWindow", "不一致"))
-		self.radioButton_unconsistent.setShortcut(_translate("mainWindow", "S"))
 		self.pushButton_pre.setText(_translate("mainWindow", "上一题"))
-		self.pushButton_pre.setShortcut(_translate("mainWindow", "Left"))
 		self.pushButton_next.setText(_translate("mainWindow", "下一题"))
-		self.pushButton_next.setShortcut(_translate("mainWindow", "Right"))
 		self.menu.setTitle(_translate("mainWindow", "文件"))
 		self.menu_2.setTitle(_translate("mainWindow", "帮助"))
 		self.action_about.setText(_translate("mainWindow", "关于"))
@@ -284,4 +278,4 @@ class Ui_mainWindow(object):
 		self.action_save.setShortcut(_translate("mainWindow", "Ctrl+S"))
 
 
-import utils.icons_rc
+from utils import icons_rc

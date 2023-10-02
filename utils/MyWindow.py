@@ -15,6 +15,7 @@ from utils.mainwindow import Ui_mainWindow
 import pandas as pd
 from utils.translate import TranslateThread
 from utils.dialog_text import *
+from PyQt5.QtCore import *
 
 
 class MainWindow(QMainWindow, Ui_mainWindow):
@@ -179,7 +180,7 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 	def saveAs_file(self):
 		if not self.file_path:
 			return
-		path = QFileDialog.getSaveFileName(window, '另存为')[0]
+		path = QFileDialog.getSaveFileName(self, '另存为')[0]
 		if path:
 			self.file_path = path
 			self.save_file()
@@ -457,3 +458,21 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 		# 	about_text = f.read()
 		text = DIALOG_HELP_HTML
 		QMessageBox.about(self, '帮助', text)
+	
+	# 检测键盘回车按键
+	def keyPressEvent(self, event):
+		if not self.comboBox_unanswerable_reason.isEnabled():
+			return
+		# print("按下：" + str(event.key()))
+		if (event.key() == Qt.Key_1):
+			self.comboBox_unanswerable_reason.setCurrentIndex(1)
+		if (event.key() == Qt.Key_2):
+			self.comboBox_unanswerable_reason.setCurrentIndex(2)
+		if (event.key() == Qt.Key_3):
+			self.comboBox_unanswerable_reason.setCurrentIndex(3)
+		if (event.key() == Qt.Key_4):
+			self.comboBox_unanswerable_reason.setCurrentIndex(4)
+		if (event.key() == Qt.Key_5):
+			self.comboBox_unanswerable_reason.setCurrentIndex(5)
+		if (event.key() == Qt.Key_6):
+			self.comboBox_unanswerable_reason.setCurrentIndex(6)
