@@ -330,6 +330,8 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 			self.translate("target")
 		if self.answer_auto_translate:
 			self.translate("answer")
+		
+		self.init_progress()
 	
 	def init_radio_answerable(self):
 		# 初始化组件状态
@@ -476,3 +478,7 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 			self.comboBox_unanswerable_reason.setCurrentIndex(5)
 		if (event.key() == Qt.Key_6):
 			self.comboBox_unanswerable_reason.setCurrentIndex(6)
+	
+	def init_progress(self):
+		text = f"{self.current_index + 1} / {self.data_size}"
+		self.label_progress.setText(text)
