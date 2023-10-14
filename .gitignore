@@ -4,3 +4,5 @@ build
 dist
 /*.spec
 /*.xlsx
+test
+api.properties

@@ -14,7 +14,13 @@ import random
 import traceback
 import time
 
+from utils.WkProperties import WkProperties
+
 from PyQt5.QtCore import QThread, pyqtSignal
+
+property = WkProperties("./api.properties")
+KEY = property.get("KEY")
+APPID = property.get("APPID")
 
 
 # 翻译线程
@@ -64,9 +70,6 @@ def translate_en2zh(text):
 	}
 	
 	url = 'https://fanyi-api.baidu.com/api/trans/vip/translate'
-	
-	KEY = 'XZwpfN_VJ13VSXLhSYp5'
-	APPID = "20230930001833627"
 	
 	data = {
 		'q': text.strip().replace("\n", "@@"),
