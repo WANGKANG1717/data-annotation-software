@@ -6,3 +6,4 @@ dist
 /*.xlsx
 test
 api.properties
+app.properties
