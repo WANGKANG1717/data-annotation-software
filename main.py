@@ -17,7 +17,7 @@
 '''
 
 import sys
-from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import QApplication
 from utils.MyWindow import MainWindow
 
 if __name__ == '__main__':

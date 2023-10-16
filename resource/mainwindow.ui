@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout" rowstretch="0,6,0,0,2,0,1,0,0,0">
+   <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,0,0,0,0,0,1,0,0,0">
     <item row="0" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout">
       <property name="spacing">
@@ -105,26 +105,26 @@
       <item>
        <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;问题：&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;问题（prediction）：&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_question_source">
+       <widget class="QPushButton" name="pushButton_prediction_source">
         <property name="text">
          <string>原文</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_question_translate">
+       <widget class="QPushButton" name="pushButton_prediction_translate">
         <property name="text">
          <string>翻译</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="checkBox_question_auto_translate">
+       <widget class="QCheckBox" name="checkBox_prediction_auto_translate">
         <property name="text">
          <string>自动翻译</string>
         </property>
@@ -146,13 +146,80 @@
      </layout>
     </item>
     <item row="4" column="0">
-     <widget class="QTextBrowser" name="textBrowser_question">
+     <widget class="QTextBrowser" name="textBrowser_prediction">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>40</height>
+       </size>
+      </property>
       <property name="styleSheet">
        <string notr="true">font-size:17px;</string>
       </property>
      </widget>
     </item>
     <item row="5" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_9">
+      <property name="leftMargin">
+       <number>10</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;预期问题（target）：&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_target_source">
+        <property name="text">
+         <string>原文</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_target_translate">
+        <property name="text">
+         <string>翻译</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="checkBox_target_auto_translate">
+        <property name="text">
+         <string>自动翻译</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_9">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>428</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item row="6" column="0">
+     <widget class="QTextBrowser" name="textBrowser_target">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font-size:17px;</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout_5">
       <property name="leftMargin">
        <number>10</number>
@@ -200,7 +267,7 @@
       </item>
      </layout>
     </item>
-    <item row="6" column="0">
+    <item row="8" column="0">
      <widget class="QTextBrowser" name="textBrowser_answer">
       <property name="maximumSize">
        <size>
@@ -213,7 +280,7 @@
       </property>
      </widget>
     </item>
-    <item row="7" column="0">
+    <item row="9" column="0">
      <widget class="QGroupBox" name="groupBox">
       <property name="title">
        <string>任务a：问题是否可回答？</string>
@@ -350,7 +417,7 @@
       </layout>
      </widget>
     </item>
-    <item row="8" column="0">
+    <item row="10" column="0">
      <widget class="QGroupBox" name="groupBox_2">
       <property name="title">
        <string>任务b： 问题与答案是否一致？</string>
@@ -392,7 +459,7 @@
       </layout>
      </widget>
     </item>
-    <item row="9" column="0">
+    <item row="11" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout_7">
       <item>
        <spacer name="horizontalSpacer_5">

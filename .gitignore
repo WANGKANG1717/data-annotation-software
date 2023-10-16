@@ -1,6 +1,7 @@
 资料
 .idea
 build
+out
 dist
 /*.spec
 /*.xlsx

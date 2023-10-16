@@ -58,17 +58,20 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 		self.file_path = ''  # 文件路径
 		self.excel_data = pd.DataFrame()  # 总的excel信息
 		self.passage = ""  # 当前文章
-		self.question = ""  # 当前问题
+		self.prediction = ""  # 当前问题
+		self.target = ""
 		self.data_size = -1  # 数据集大小
 		self.current_index = 0  # 当前文章/问题下标
 		self.answerable = True  # 问题是否可回答
 		self.consistent = True  # 问题一致性 如果答案不可回答，则一致性为False
 		self.translate_map_passage = {}  # 用来记录已经翻译的文章，避免每次都要翻译，浪费算力
-		self.translate_map_question = {}
+		self.translate_map_prediction = {}
+		self.translate_map_target = {}
 		self.translate_map_answer = {}
 		self.translate_threads = []  # 翻译线程队列
 		self.passage_auto_translate = False  # 自动翻译
-		self.question_auto_translate = False
+		self.prediction_auto_translate = False
+		self.target_auto_translate = False
 		self.answer_auto_translate = False
 		
 		self.already_save_file = True  # 方便退出脚本
@@ -87,15 +90,18 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 		self.pushButton_notes_confirm.setDisabled(True)
 		#
 		self.pushButton_article_source.setDisabled(True)
-		self.pushButton_question_source.setDisabled(True)
+		self.pushButton_prediction_source.setDisabled(True)
+		self.pushButton_target_source.setDisabled(True)
 		self.pushButton_answer_source.setDisabled(True)
 		#
 		self.pushButton_article_translate.setDisabled(True)
-		self.pushButton_question_translate.setDisabled(True)
+		self.pushButton_prediction_translate.setDisabled(True)
+		self.pushButton_target_translate.setDisabled(True)
 		self.pushButton_answer_translate.setDisabled(True)
 		#
 		self.checkBox_article_auto_translate.setDisabled(True)
-		self.checkBox_question_auto_translate.setDisabled(True)
+		self.checkBox_prediction_auto_translate.setDisabled(True)
+		self.checkBox_target_auto_translate.setDisabled(True)
 		self.checkBox_answer_auto_translate.setDisabled(True)
 	
 	def enable_components(self):
@@ -110,22 +116,25 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 		self.pushButton_notes_confirm.setDisabled(False)
 		#
 		self.pushButton_article_source.setDisabled(False)
-		self.pushButton_question_source.setDisabled(False)
+		self.pushButton_prediction_source.setDisabled(False)
+		self.pushButton_target_source.setDisabled(False)
 		self.pushButton_answer_source.setDisabled(False)
 		#
 		self.pushButton_article_translate.setDisabled(False)
-		self.pushButton_question_translate.setDisabled(False)
+		self.pushButton_prediction_translate.setDisabled(False)
+		self.pushButton_target_translate.setDisabled(False)
 		self.pushButton_answer_translate.setDisabled(False)
 		#
 		self.checkBox_article_auto_translate.setDisabled(False)
-		self.checkBox_question_auto_translate.setDisabled(False)
+		self.checkBox_prediction_auto_translate.setDisabled(False)
+		self.checkBox_target_auto_translate.setDisabled(False)
 		self.checkBox_answer_auto_translate.setDisabled(False)
 	
 	# 信号与槽的设置
 	def init_signal(self):
 		self.action_open.triggered.connect(self.open_file)
-		self.pushButton_next.clicked.connect(self.next_passage_question)
-		self.pushButton_pre.clicked.connect(self.pre_passage_question)
+		self.pushButton_next.clicked.connect(self.next_passage_prediction)
+		self.pushButton_pre.clicked.connect(self.pre_passage_prediction)
 		self.radioButton_answerable.clicked.connect(lambda: self.set_answerable(True))
 		self.radioButton_unanswerable.clicked.connect(lambda: self.set_answerable(False))
 		self.radioButton_consistent.clicked.connect(lambda: self.set_consistent(True))
@@ -135,15 +144,18 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 		self.action_save.triggered.connect(self.save_file)
 		#
 		self.pushButton_article_translate.clicked.connect(lambda: self.translate("passage"))
-		self.pushButton_question_translate.clicked.connect(lambda: self.translate("target"))
+		self.pushButton_prediction_translate.clicked.connect(lambda: self.translate("prediction"))
+		self.pushButton_target_translate.clicked.connect(lambda: self.translate("target"))
 		self.pushButton_answer_translate.clicked.connect(lambda: self.translate("answer"))
 		#
 		self.pushButton_article_source.clicked.connect(lambda: self.to_source("passage"))
-		self.pushButton_question_source.clicked.connect(lambda: self.to_source("target"))
+		self.pushButton_prediction_source.clicked.connect(lambda: self.to_source("prediction"))
+		self.pushButton_target_source.clicked.connect(lambda: self.to_source("target"))
 		self.pushButton_answer_source.clicked.connect(lambda: self.to_source("answer"))
 		#
 		self.checkBox_article_auto_translate.clicked.connect(lambda: self.auto_translate("passage"))
-		self.checkBox_question_auto_translate.clicked.connect(lambda: self.auto_translate("target"))
+		self.checkBox_prediction_auto_translate.clicked.connect(lambda: self.auto_translate("prediction"))
+		self.checkBox_target_auto_translate.clicked.connect(lambda: self.auto_translate("target"))
 		self.checkBox_answer_auto_translate.clicked.connect(lambda: self.auto_translate("answer"))
 		#
 		self.action_saveAs.triggered.connect(self.saveAs_file)
@@ -199,12 +211,17 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 		# print(self.passage)
 		self.textBrowser_passage.setText(self.passage)
 	
-	def getQuestion(self):
-		self.question = self.excel_data.loc[self.current_index, 'target']
-		# print(self.question)
-		self.textBrowser_question.setText(self.question)
+	def getprediction(self):
+		self.prediction = self.excel_data.loc[self.current_index, 'prediction']
+		# print(self.prediction)
+		self.textBrowser_prediction.setText(self.prediction)
 	
-	def next_passage_question(self):
+	def getTarget(self):
+		self.target = self.excel_data.loc[self.current_index, 'target']
+		# print(self.prediction)
+		self.textBrowser_target.setText(self.target)
+	
+	def next_passage_prediction(self):
 		# 这里首先要确保不可回答-其他 备注要填上
 		if self.answerable == False:
 			if self.comboBox_unanswerable_reason.currentIndex() == 0:
@@ -219,7 +236,7 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 		else:
 			QMessageBox.warning(self, "警告", "已经是最后一个问题！")
 	
-	def pre_passage_question(self):
+	def pre_passage_prediction(self):
 		if self.current_index > 0:
 			self.current_index -= 1
 			self.get_set_ui_from_source()
@@ -303,7 +320,8 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 	def get_set_ui_from_source(self):
 		self.already_save_file = False
 		self.getPassage()
-		self.getQuestion()
+		self.getprediction()
+		self.getTarget()
 		self.getAnswer()
 		
 		self.set_answerable(self.judge_answerable())
@@ -321,12 +339,15 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 		self.lineEdit_unanswerable_notes.setText(self.get_column_text("备注"))
 		#
 		self.pushButton_article_translate.setDisabled(self.passage_auto_translate)
-		self.pushButton_question_translate.setDisabled(self.question_auto_translate)
+		self.pushButton_prediction_translate.setDisabled(self.prediction_auto_translate)
+		self.pushButton_target_translate.setDisabled(self.target_auto_translate)
 		self.pushButton_answer_translate.setDisabled(self.answer_auto_translate)
 		#
 		if self.passage_auto_translate:
 			self.translate("passage")
-		if self.question_auto_translate:
+		if self.prediction_auto_translate:
+			self.translate("prediction")
+		if self.target_auto_translate:
 			self.translate("target")
 		if self.answer_auto_translate:
 			self.translate("answer")
@@ -370,11 +391,17 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 			if self.translate_map_passage.get(self.current_index) is not None:
 				self.textBrowser_passage.setText(self.translate_map_passage.get(self.current_index))
 				return
+		elif param == "prediction":
+			self.pushButton_prediction_translate.setDisabled(True)
+			self.pushButton_prediction_source.setDisabled(False)
+			if self.translate_map_prediction.get(self.current_index) is not None:
+				self.textBrowser_prediction.setText(self.translate_map_prediction.get(self.current_index))
+				return
 		elif param == "target":
-			self.pushButton_question_translate.setDisabled(True)
-			self.pushButton_question_source.setDisabled(False)
-			if self.translate_map_question.get(self.current_index) is not None:
-				self.textBrowser_question.setText(self.translate_map_question.get(self.current_index))
+			self.pushButton_target_translate.setDisabled(True)
+			self.pushButton_target_source.setDisabled(False)
+			if self.translate_map_target.get(self.current_index) is not None:
+				self.textBrowser_target.setText(self.translate_map_target.get(self.current_index))
 				return
 		elif param == "answer":
 			self.pushButton_answer_translate.setDisabled(True)
@@ -403,12 +430,18 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 			self.textBrowser_passage.setText(translate_text)
 			if translate_text not in self.ERROR_TRANSLATE:
 				self.translate_map_passage[index] = translate_text
-		elif param == "target":
-			self.pushButton_question_translate.setDisabled(True)
-			self.pushButton_question_source.setDisabled(False)
-			self.textBrowser_question.setText(translate_text)
+		elif param == "prediction":
+			self.pushButton_prediction_translate.setDisabled(True)
+			self.pushButton_prediction_source.setDisabled(False)
+			self.textBrowser_prediction.setText(translate_text)
 			if translate_text not in self.ERROR_TRANSLATE:
-				self.translate_map_question[index] = translate_text
+				self.translate_map_prediction[index] = translate_text
+		elif param == "target":
+			self.pushButton_target_translate.setDisabled(True)
+			self.pushButton_target_source.setDisabled(False)
+			self.textBrowser_target.setText(translate_text)
+			if translate_text not in self.ERROR_TRANSLATE:
+				self.translate_map_prediction[index] = translate_text
 		elif param == "answer":
 			self.pushButton_answer_translate.setDisabled(True)
 			self.pushButton_answer_source.setDisabled(False)
@@ -421,10 +454,14 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 			self.pushButton_article_translate.setDisabled(False)
 			self.pushButton_article_source.setDisabled(True)
 			self.textBrowser_passage.setText(self.get_column_text(param))
+		elif param == "prediction":
+			self.pushButton_prediction_translate.setDisabled(False)
+			self.pushButton_prediction_source.setDisabled(True)
+			self.textBrowser_prediction.setText(self.get_column_text(param))
 		elif param == "target":
-			self.pushButton_question_translate.setDisabled(False)
-			self.pushButton_question_source.setDisabled(True)
-			self.textBrowser_question.setText(self.get_column_text(param))
+			self.pushButton_target_translate.setDisabled(False)
+			self.pushButton_target_source.setDisabled(True)
+			self.textBrowser_target.setText(self.get_column_text(param))
 		elif param == "answer":
 			self.pushButton_answer_translate.setDisabled(False)
 			self.pushButton_answer_source.setDisabled(True)
@@ -433,8 +470,10 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 	def auto_translate(self, param):
 		if param == "passage":
 			self.passage_auto_translate = self.checkBox_article_auto_translate.isChecked()
-		elif param == "target":
-			self.question_auto_translate = self.checkBox_question_auto_translate.isChecked()
+		elif param == "prediction":
+			self.prediction_auto_translate = self.checkBox_prediction_auto_translate.isChecked()
+		elif param == 'target':
+			self.target_auto_translate = self.checkBox_target_auto_translate.isChecked()
 		elif param == "answer":
 			self.answer_auto_translate = self.checkBox_answer_auto_translate.isChecked()
 		self.translate(param)
