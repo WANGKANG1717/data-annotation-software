@@ -9,13 +9,14 @@
 import sys
 import traceback
 
-from PyQt5.QtWidgets import *
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMessageBox, QFileDialog, QMainWindow
+
 from utils.mainwindow import Ui_mainWindow
 
 import pandas as pd
 from utils.translate import TranslateThread
 from utils.dialog_text import *
-from PyQt5.QtCore import *
 
 
 class MainWindow(QMainWindow, Ui_mainWindow):
@@ -77,6 +78,15 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 		self.already_save_file = True  # 方便退出脚本
 		
 		self.disable_components()  # 一开始需要禁用按钮 等到打开文件后再开启按钮
+	
+	def init_params(self):
+		self.current_index = 0
+		self.data_size = len(self.excel_data['passage'])
+		self.translate_map_passage = {}  # 用来记录已经翻译的文章，避免每次都要翻译，浪费算力
+		self.translate_map_prediction = {}
+		self.translate_map_target = {}
+		self.translate_map_answer = {}
+		self.translate_threads = []  # 翻译线程队列
 	
 	def disable_components(self):
 		self.pushButton_next.setDisabled(True)
@@ -198,8 +208,7 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 			self.save_file()
 	
 	def init_component(self):
-		self.current_index = 0
-		self.data_size = len(self.excel_data['passage'])
+		self.init_params()
 		self.enable_components()
 		self.get_set_ui_from_source()
 	
@@ -441,7 +450,7 @@ class MainWindow(QMainWindow, Ui_mainWindow):
 			self.pushButton_target_source.setDisabled(False)
 			self.textBrowser_target.setText(translate_text)
 			if translate_text not in self.ERROR_TRANSLATE:
-				self.translate_map_prediction[index] = translate_text
+				self.translate_map_target[index] = translate_text
 		elif param == "answer":
 			self.pushButton_answer_translate.setDisabled(True)
 			self.pushButton_answer_source.setDisabled(False)
