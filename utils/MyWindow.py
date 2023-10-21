@@ -240,7 +240,7 @@ class MainWindow(QMainWindow, Ui_mainWindow):
         self.textBrowser_target.setText(self.target)
     
     def get_document_id(self):
-        return self.excel_data.loc[self.current_index, 'document_id'].strip()
+        return self.excel_data.iloc[self.current_index, 0].strip()
     
     def next_passage_prediction(self):
         # 这里首先要确保不可回答-其他 备注要填上
