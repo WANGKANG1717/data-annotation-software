@@ -113,6 +113,9 @@ class MainWindow(QMainWindow, Ui_mainWindow):
         self.checkBox_prediction_auto_translate.setDisabled(True)
         self.checkBox_target_auto_translate.setDisabled(True)
         self.checkBox_answer_auto_translate.setDisabled(True)
+        # 搜索功能
+        self.lineEdit_search.setDisabled(True)
+        self.pushButton_search.setDisabled(True)
     
     def enable_components(self):
         self.pushButton_next.setDisabled(False)
@@ -123,7 +126,7 @@ class MainWindow(QMainWindow, Ui_mainWindow):
         # self.lineEdit_unanswerable_notes.setDisabled(False)
         self.radioButton_consistent.setDisabled(False)
         self.radioButton_unconsistent.setDisabled(False)
-        self.pushButton_notes_confirm.setDisabled(False)
+        # self.pushButton_notes_confirm.setDisabled(False)
         #
         self.pushButton_article_source.setDisabled(False)
         self.pushButton_prediction_source.setDisabled(False)
@@ -139,6 +142,10 @@ class MainWindow(QMainWindow, Ui_mainWindow):
         self.checkBox_prediction_auto_translate.setDisabled(False)
         self.checkBox_target_auto_translate.setDisabled(False)
         self.checkBox_answer_auto_translate.setDisabled(False)
+        #
+        # 搜索功能
+        self.lineEdit_search.setDisabled(False)
+        self.pushButton_search.setDisabled(False)
     
     # 信号与槽的设置
     def init_signal(self):
@@ -173,6 +180,8 @@ class MainWindow(QMainWindow, Ui_mainWindow):
         #
         self.action_about.triggered.connect(self.show_about_dialog)
         self.action_help.triggered.connect(self.show_help_dialog)
+        #
+        self.pushButton_search.clicked.connect(self.search)
     
     def open_file(self):
         # print("open_file")
@@ -291,8 +300,10 @@ class MainWindow(QMainWindow, Ui_mainWindow):
         # 只有当index == 6 时才会放开
         if index == 6:
             self.lineEdit_unanswerable_notes.setDisabled(False)
+            self.pushButton_notes_confirm.setDisabled(False)
         else:
             self.lineEdit_unanswerable_notes.setDisabled(True)
+            self.pushButton_notes_confirm.setDisabled(True)
     
     def set_notes(self):  # flag =True 说明是other错误
         text = self.lineEdit_unanswerable_notes.text().strip()
@@ -533,3 +544,11 @@ class MainWindow(QMainWindow, Ui_mainWindow):
     def init_progress(self):
         text = f"{self.current_index + 1} / {self.data_size}"
         self.label_progress.setText(text)
+    
+    def search(self):
+        key = self.lineEdit_search.text().strip()
+        if key is None or key == "":
+            return
+        passage = self.textBrowser_passage.toPlainText()
+        passage_new = passage.replace(key, f"<b>{key}</b>").replace('\n', "<br>")
+        self.textBrowser_passage.setText(passage_new)
