@@ -3,7 +3,7 @@
 # @Author   : WANGKANG
 # @Blog     : kang17.xyz
 # @File     : main.py
-# @brief    : 使用QT编写的数据标注软件，想让我干垃圾活是不可能的，这辈子都不可能的
+# @brief    : 使用QT编写的数据标注软件
 # Copyright 2023 WANGKANG, All Rights Reserved.
 
 '''
@@ -21,7 +21,7 @@ from PyQt5.QtWidgets import QApplication
 from utils.MyWindow import MainWindow
 
 if __name__ == '__main__':
-	app = QApplication(sys.argv)
-	window = MainWindow()
-	window.show()
-	sys.exit(app.exec_())
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())
